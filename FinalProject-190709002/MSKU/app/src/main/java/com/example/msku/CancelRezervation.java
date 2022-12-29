@@ -29,7 +29,8 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CancelRezervation extends AppCompatActivity {
+public class CancelRezervation extends AppCompatActivity implements BalanceChangingTest {
+//Code that in this activity is written by Feyza Yılmaz.
 
     ImageButton btnBack;
     ImageButton btnHome;
@@ -47,6 +48,8 @@ public class CancelRezervation extends AppCompatActivity {
     Switch switch4;
     Switch switch5;
 
+    int foodAmount = 10;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +65,14 @@ public class CancelRezervation extends AppCompatActivity {
 
         Intent intentGet = getIntent();
         String str =intentGet.getStringExtra("message");
+
+        //Update the current day every week:
+       /* FirebaseFirestore fbUpdate = FirebaseFirestore.getInstance();
+        fbUpdate.collection("Current Date").document("Monday").update("Day", "26.12.22");
+        fbUpdate.collection("Current Date").document("Tuesday").update("Day", "27.12.22");
+        fbUpdate.collection("Current Date").document("Wednesday").update("Day", "28.12.22");
+        fbUpdate.collection("Current Date").document("Thursday").update("Day", "29.12.22");
+        fbUpdate.collection("Current Date").document("Friday").update("Day", "30.12.22");*/
 
         FirebaseFirestore fb1 = FirebaseFirestore.getInstance();
         fb1.collection("Current Date").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -116,28 +127,50 @@ public class CancelRezervation extends AppCompatActivity {
                                 boolean isExist = false;
                                 if (task.isSuccessful()) {
                                     for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
-                                        if (documentSnapshot.get("Day").equals(selectDate1.getText().toString())) {
-                                            Map<String, Object> update = new HashMap<>();
-                                            update.put("Day", FieldValue.delete());
-                                            DocumentReference df = fb.collection("Student Email").document(str).collection("Rezervations").document(documentSnapshot.getId());
-                                            df.update(update).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    if (task.isSuccessful()){
-                                                        Toast.makeText(CancelRezervation.this, "Rezervation is succesfully canceled.", Toast.LENGTH_SHORT).show();
-                                                    }else{
-                                                        Toast.makeText(CancelRezervation.this, "Error occured, try again.", Toast.LENGTH_SHORT).show();
-                                                        Log.w(TAG, "Error getting documentReference");
+                                        if(documentSnapshot.get("Day") !=null){
+                                            if (documentSnapshot.get("Day").equals(selectDate1.getText().toString())) {
+                                                FirebaseFirestore fb2 = FirebaseFirestore.getInstance();
+                                                fb2.collection("Student Email").document(str).collection("Balance").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            for (QueryDocumentSnapshot documentSnapshot : task.getResult()){
+                                                                int currentAmount = Integer.valueOf(documentSnapshot.get("Balance History").toString());
+                                                                int newBalance = (addBalanceWhenCanceled(currentAmount,foodAmount));
+                                                                Intent intent = new Intent(getApplicationContext(), BalanceHistory.class);
+                                                                intent.putExtra("message_new", Integer.valueOf(newBalance));
+                                                                intent.putExtra("message", str);
+                                                                startActivity(intent);
+                                                            }
+                                                        }
                                                     }
-                                                }
-                                            });
-                                            isExist = true;
-                                            break;
+                                                });
+                                                Map<String, Object> update = new HashMap<>();
+                                                update.put("Day", FieldValue.delete());
+                                                DocumentReference df = fb.collection("Student Email").document(str).collection("Rezervations").document(documentSnapshot.getId());
+                                                df.update(update).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if (task.isSuccessful()){
+                                                            Toast.makeText(CancelRezervation.this, "Rezervation is succesfully canceled.", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(CancelRezervation.this, "Check your balance...", Toast.LENGTH_SHORT).show();
+                                                        }else{
+                                                            Toast.makeText(CancelRezervation.this, "Error occured, try again.", Toast.LENGTH_SHORT).show();
+                                                            Log.w(TAG, "Error getting documentReference");
+                                                        }
+                                                    }
+                                                });
+
+                                                isExist = true;
+                                                break;
+                                            }
                                         }
+
                                     }
                                     if (!isExist) {
                                         Toast.makeText(CancelRezervation.this, "You don't have rezervation on that date!", Toast.LENGTH_SHORT).show();
                                     }
+
                                 }
                             }
                         });
@@ -174,24 +207,47 @@ public class CancelRezervation extends AppCompatActivity {
                                 boolean isExist = false;
                                 if (task.isSuccessful()) {
                                     for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
-                                        if (documentSnapshot.get("Day").equals(selectDate2.getText().toString())) {
-                                            Map<String, Object> update = new HashMap<>();
-                                            update.put("Day", FieldValue.delete());
-                                            DocumentReference df = fb.collection("Student Email").document(str).collection("Rezervations").document(documentSnapshot.getId());
-                                            df.update(update).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    if (task.isSuccessful()) {
-                                                        Toast.makeText(CancelRezervation.this, "Rezervation is succesfully canceled.", Toast.LENGTH_SHORT).show();
-                                                    } else {
-                                                        Toast.makeText(CancelRezervation.this, "Error occured, try again.", Toast.LENGTH_SHORT).show();
-                                                        Log.w(TAG, "Error getting documentReference");
+                                        if(documentSnapshot.get("Day") != null){
+                                            if (documentSnapshot.get("Day").equals(selectDate2.getText().toString())) {
+
+                                                FirebaseFirestore fb2 = FirebaseFirestore.getInstance();
+                                                fb2.collection("Student Email").document(str).collection("Balance").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            for (QueryDocumentSnapshot documentSnapshot : task.getResult()){
+                                                                int currentAmount = Integer.valueOf(documentSnapshot.get("Balance History").toString());
+                                                                int newBalance = (addBalanceWhenCanceled(currentAmount,foodAmount));
+                                                                Intent intent = new Intent(getApplicationContext(), BalanceHistory.class);
+                                                                intent.putExtra("message_new", Integer.valueOf(newBalance));
+                                                                intent.putExtra("message", str);
+                                                                startActivity(intent);
+                                                            }
+                                                        }
                                                     }
-                                                }
-                                            });
-                                            isExist = true;
-                                            break;
+                                                });
+
+
+                                                Map<String, Object> update = new HashMap<>();
+                                                update.put("Day", FieldValue.delete());
+                                                DocumentReference df = fb.collection("Student Email").document(str).collection("Rezervations").document(documentSnapshot.getId());
+                                                df.update(update).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if (task.isSuccessful()) {
+                                                            Toast.makeText(CancelRezervation.this, "Rezervation is succesfully canceled.", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(CancelRezervation.this, "Check your balance...", Toast.LENGTH_SHORT).show();
+                                                        } else {
+                                                            Toast.makeText(CancelRezervation.this, "Error occured, try again.", Toast.LENGTH_SHORT).show();
+                                                            Log.w(TAG, "Error getting documentReference");
+                                                        }
+                                                    }
+                                                });
+                                                isExist = true;
+                                                break;
+                                            }
                                         }
+
                                     }
                                     if (!isExist) {
                                         Toast.makeText(CancelRezervation.this, "You don't have rezervation on that date!", Toast.LENGTH_SHORT).show();
@@ -233,23 +289,45 @@ public class CancelRezervation extends AppCompatActivity {
                                 boolean isExist = false;
                                 if (task.isSuccessful()) {
                                     for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
-                                        if (documentSnapshot.get("Day").equals(selectDate3.getText().toString())) {
-                                            Map<String, Object> update = new HashMap<>();
-                                            update.put("Day", FieldValue.delete());
-                                            DocumentReference df = fb.collection("Student Email").document(str).collection("Rezervations").document(documentSnapshot.getId());
-                                            df.update(update).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    if (task.isSuccessful()) {
-                                                        Toast.makeText(CancelRezervation.this, "Rezervation is succesfully canceled.", Toast.LENGTH_SHORT).show();
-                                                    } else {
-                                                        Toast.makeText(CancelRezervation.this, "Error occured, try again.", Toast.LENGTH_SHORT).show();
-                                                        Log.w(TAG, "Error getting documentReference");
+                                        if(documentSnapshot.get("Day") !=null){
+                                            if (documentSnapshot.get("Day").equals(selectDate3.getText().toString())) {
+
+                                                FirebaseFirestore fb2 = FirebaseFirestore.getInstance();
+                                                fb2.collection("Student Email").document(str).collection("Balance").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            for (QueryDocumentSnapshot documentSnapshot : task.getResult()){
+                                                                int currentAmount = Integer.valueOf(documentSnapshot.get("Balance History").toString());
+                                                                int newBalance = (addBalanceWhenCanceled(currentAmount,foodAmount));
+                                                                Intent intent = new Intent(getApplicationContext(), BalanceHistory.class);
+                                                                intent.putExtra("message_new", Integer.valueOf(newBalance));
+                                                                intent.putExtra("message", str);
+                                                                startActivity(intent);
+                                                            }
+                                                        }
                                                     }
-                                                }
-                                            });
-                                            isExist = true;
-                                            break;
+                                                });
+
+
+                                                Map<String, Object> update = new HashMap<>();
+                                                update.put("Day", FieldValue.delete());
+                                                DocumentReference df = fb.collection("Student Email").document(str).collection("Rezervations").document(documentSnapshot.getId());
+                                                df.update(update).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if (task.isSuccessful()) {
+                                                            Toast.makeText(CancelRezervation.this, "Rezervation is succesfully canceled.", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(CancelRezervation.this, "Check your balance...", Toast.LENGTH_SHORT).show();
+                                                        } else {
+                                                            Toast.makeText(CancelRezervation.this, "Error occured, try again.", Toast.LENGTH_SHORT).show();
+                                                            Log.w(TAG, "Error getting documentReference");
+                                                        }
+                                                    }
+                                                });
+                                                isExist = true;
+                                                break;
+                                            }
                                         }
                                     }
                                     if (!isExist) {
@@ -291,24 +369,47 @@ public class CancelRezervation extends AppCompatActivity {
                                 boolean isExist = false;
                                 if (task.isSuccessful()) {
                                     for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
-                                        if (documentSnapshot.get("Day").equals(selectDate4.getText().toString())) {
-                                            Map<String, Object> update = new HashMap<>();
-                                            update.put("Day", FieldValue.delete());
-                                            DocumentReference df = fb.collection("Student Email").document(str).collection("Rezervations").document(documentSnapshot.getId());
-                                            df.update(update).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    if (task.isSuccessful()) {
-                                                        Toast.makeText(CancelRezervation.this, "Rezervation is succesfully canceled.", Toast.LENGTH_SHORT).show();
-                                                    } else {
-                                                        Toast.makeText(CancelRezervation.this, "Error occured, try again.", Toast.LENGTH_SHORT).show();
-                                                        Log.w(TAG, "Error getting documentReference");
+                                        if(documentSnapshot.get("Day") !=null){
+                                            if (documentSnapshot.get("Day").equals(selectDate4.getText().toString())) {
+
+                                                FirebaseFirestore fb2 = FirebaseFirestore.getInstance();
+                                                fb2.collection("Student Email").document(str).collection("Balance").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            for (QueryDocumentSnapshot documentSnapshot : task.getResult()){
+                                                                int currentAmount = Integer.valueOf(documentSnapshot.get("Balance History").toString());
+                                                                int newBalance = (addBalanceWhenCanceled(currentAmount,foodAmount));
+                                                                Intent intent = new Intent(getApplicationContext(), BalanceHistory.class);
+                                                                intent.putExtra("message_new", Integer.valueOf(newBalance));
+                                                                intent.putExtra("message", str);
+                                                                startActivity(intent);
+                                                            }
+                                                        }
                                                     }
-                                                }
-                                            });
-                                            isExist = true;
-                                            break;
+                                                });
+
+
+                                                Map<String, Object> update = new HashMap<>();
+                                                update.put("Day", FieldValue.delete());
+                                                DocumentReference df = fb.collection("Student Email").document(str).collection("Rezervations").document(documentSnapshot.getId());
+                                                df.update(update).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if (task.isSuccessful()) {
+                                                            Toast.makeText(CancelRezervation.this, "Rezervation is succesfully canceled.", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(CancelRezervation.this, "Check your balance...", Toast.LENGTH_SHORT).show();
+                                                        } else {
+                                                            Toast.makeText(CancelRezervation.this, "Error occured, try again.", Toast.LENGTH_SHORT).show();
+                                                            Log.w(TAG, "Error getting documentReference");
+                                                        }
+                                                    }
+                                                });
+                                                isExist = true;
+                                                break;
+                                            }
                                         }
+
                                     }
                                     if (!isExist) {
                                         Toast.makeText(CancelRezervation.this, "You don't have rezervation on that date!", Toast.LENGTH_SHORT).show();
@@ -349,24 +450,47 @@ public class CancelRezervation extends AppCompatActivity {
                                 boolean isExist = false;
                                 if (task.isSuccessful()) {
                                     for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
-                                        if (documentSnapshot.get("Day").equals(selectDate5.getText().toString())) {
-                                            Map<String, Object> update = new HashMap<>();
-                                            update.put("Day", FieldValue.delete());
-                                            DocumentReference df = fb.collection("Student Email").document(str).collection("Rezervations").document(documentSnapshot.getId());
-                                            df.update(update).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    if (task.isSuccessful()) {
-                                                        Toast.makeText(CancelRezervation.this, "Rezervation is succesfully canceled.", Toast.LENGTH_SHORT).show();
-                                                    } else {
-                                                        Toast.makeText(CancelRezervation.this, "Error occured, try again.", Toast.LENGTH_SHORT).show();
-                                                        Log.w(TAG, "Error getting documentReference");
+                                        if(documentSnapshot.get("Day") !=null){
+                                            if (documentSnapshot.get("Day").equals(selectDate5.getText().toString())) {
+
+                                                FirebaseFirestore fb2 = FirebaseFirestore.getInstance();
+                                                fb2.collection("Student Email").document(str).collection("Balance").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            for (QueryDocumentSnapshot documentSnapshot : task.getResult()){
+                                                                int currentAmount = Integer.valueOf(documentSnapshot.get("Balance History").toString());
+                                                                int newBalance = (addBalanceWhenCanceled(currentAmount,foodAmount));
+                                                                Intent intent = new Intent(getApplicationContext(), BalanceHistory.class);
+                                                                intent.putExtra("message_new", Integer.valueOf(newBalance));
+                                                                intent.putExtra("message", str);
+                                                                startActivity(intent);
+                                                            }
+                                                        }
                                                     }
-                                                }
-                                            });
-                                            isExist = true;
-                                            break;
+                                                });
+
+
+                                                Map<String, Object> update = new HashMap<>();
+                                                update.put("Day", FieldValue.delete());
+                                                DocumentReference df = fb.collection("Student Email").document(str).collection("Rezervations").document(documentSnapshot.getId());
+                                                df.update(update).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if (task.isSuccessful()) {
+                                                            Toast.makeText(CancelRezervation.this, "Rezervation is succesfully canceled.", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(CancelRezervation.this, "Check your balance...", Toast.LENGTH_SHORT).show();
+                                                        } else {
+                                                            Toast.makeText(CancelRezervation.this, "Error occured, try again.", Toast.LENGTH_SHORT).show();
+                                                            Log.w(TAG, "Error getting documentReference");
+                                                        }
+                                                    }
+                                                });
+                                                isExist = true;
+                                                break;
+                                            }
                                         }
+
                                     }
                                     if (!isExist) {
                                         Toast.makeText(CancelRezervation.this, "You don't have rezervation on that date!", Toast.LENGTH_SHORT).show();
@@ -415,5 +539,20 @@ public class CancelRezervation extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    public int addBalanceWhenCanceled(int pastAmount, int addedAmount) {
+        return pastAmount + addedAmount;
+    }
+
+    @Override
+    public int extractionBalance(int pastAmount, int extractAmount) {
+        return 0;
+    }
+
+    @Override
+    public boolean isBalanceEnough(int currentAmount, int neededAmount) {
+        return false;
     }
 }

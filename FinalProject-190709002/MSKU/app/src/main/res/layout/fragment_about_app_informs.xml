@@ -15,7 +15,7 @@
         android:minHeight="48dp"
         android:text="This app is developed by students of  Mugla Sitki Kocman University's students for Mobile Application Development course  of Computer Engineering in 2022."
         android:textAlignment="center"
-        android:textColor="#283593"
+        android:textColor="#4499BF"
         android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

@@ -12,7 +12,7 @@ import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class SecondActivity extends AppCompatActivity {
-
+//Code that in this activity is written by Feyza Yılmaz.
 
 
     @Override

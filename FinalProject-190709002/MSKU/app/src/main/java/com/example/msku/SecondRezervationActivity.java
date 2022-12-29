@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class SecondRezervationActivity extends AppCompatActivity {
+//Code that in this activity is written by Feyza Yılmaz.
 
     Button btnMake;
     Button btnCancel;

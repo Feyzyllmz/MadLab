@@ -51,21 +51,22 @@
         android:background="#C2E0E4"
         android:text="You Have"
         android:textAlignment="center"
-        android:textColor="#283593"
+        android:textColor="#4499BF"
         android:textSize="34sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="TextContrastCheck" />
 
     <TextView
         android:id="@+id/txtBalanceHistoryAmount"
         android:layout_width="400dp"
         android:layout_height="40dp"
         android:background="#C2E0E4"
-        android:text="30 "
+        android:text="1"
         android:textAlignment="center"
-        android:textColor="#283593"
+        android:textColor="#176E95"
         android:textSize="34sp"
         app:layout_constraintEnd_toEndOf="@+id/txtBalanceHistroy"
         app:layout_constraintStart_toStartOf="@+id/txtBalanceHistroy"
@@ -78,10 +79,11 @@
         android:background="#C2E0E4"
         android:text=" Dolar In Your Account"
         android:textAlignment="center"
-        android:textColor="#283593"
+        android:textColor="#4499BF"
         android:textSize="34sp"
         app:layout_constraintEnd_toEndOf="@+id/txtBalanceHistoryAmount"
         app:layout_constraintStart_toStartOf="@+id/txtBalanceHistoryAmount"
-        app:layout_constraintTop_toBottomOf="@+id/txtBalanceHistoryAmount" />
+        app:layout_constraintTop_toBottomOf="@+id/txtBalanceHistoryAmount"
+        tools:ignore="TextContrastCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

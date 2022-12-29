@@ -44,7 +44,7 @@ import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity{
-
+//Code that in this activity is written by Feyza Yılmaz.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

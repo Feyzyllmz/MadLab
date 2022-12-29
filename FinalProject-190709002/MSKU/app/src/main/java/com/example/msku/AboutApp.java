@@ -13,6 +13,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 public class AboutApp extends AppCompatActivity {
+//Code that in this activity is written by Feyza Yılmaz.
 
     ImageButton btnHelp;
     ImageButton btnBack;

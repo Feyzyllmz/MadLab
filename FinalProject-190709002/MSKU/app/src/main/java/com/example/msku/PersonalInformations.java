@@ -20,6 +20,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 public class PersonalInformations extends AppCompatActivity {
+//Code that in this activity is written by Feyza Yılmaz.
 
     ImageButton btnHome;
     Button btnLogout;

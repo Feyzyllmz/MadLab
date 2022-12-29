@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class Contact extends AppCompatActivity {
+//Code that in this activity is written by Feyza Yılmaz.
 
     ImageButton btnBack;
     ImageButton btnHome;

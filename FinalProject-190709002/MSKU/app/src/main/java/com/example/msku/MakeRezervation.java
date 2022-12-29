@@ -27,7 +27,8 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MakeRezervation extends AppCompatActivity {
+public class MakeRezervation extends AppCompatActivity implements BalanceChangingTest{
+//Code that in this activity is written by Feyza Yılmaz.
 
     ImageButton btnBack;
     ImageButton btnHome;
@@ -43,6 +44,7 @@ public class MakeRezervation extends AppCompatActivity {
     TextView selectDate3;
     TextView selectDate4;
     TextView selectDate5;
+    int foodAmount=10;
 
 
     @Override
@@ -61,8 +63,13 @@ public class MakeRezervation extends AppCompatActivity {
         Intent intentGet = getIntent();
         String str =intentGet.getStringExtra("message");
 
-        Intent intentHistory = getIntent();
-        String strHistory = intentHistory.getStringExtra("message_history");
+        //Update current day every week:
+       /* FirebaseFirestore fbUpdate = FirebaseFirestore.getInstance();
+        fbUpdate.collection("Current Date").document("Monday").update("Day", "26.12.22");
+        fbUpdate.collection("Current Date").document("Tuesday").update("Day", "27.12.22");
+        fbUpdate.collection("Current Date").document("Wednesday").update("Day", "28.12.22");
+        fbUpdate.collection("Current Date").document("Thursday").update("Day", "29.12.22");
+        fbUpdate.collection("Current Date").document("Friday").update("Day", "30.12.22");*/
 
 
         FirebaseFirestore fb1 = FirebaseFirestore.getInstance();
@@ -116,8 +123,8 @@ public class MakeRezervation extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
 
-                        FirebaseFirestore fb2 = FirebaseFirestore.getInstance();
-                        fb2.collection("Student Email").document(str).collection("Rezervations").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        FirebaseFirestore fb = FirebaseFirestore.getInstance();
+                        fb.collection("Student Email").document(str).collection("Rezervations").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                 boolean isExist = false;
@@ -132,21 +139,45 @@ public class MakeRezervation extends AppCompatActivity {
                                     if(isExist){
                                         Toast.makeText(MakeRezervation.this, "You have rezervation to that day already!", Toast.LENGTH_SHORT).show();
                                     }else{
-                                        Map<String, String > newRezervation = new HashMap<>();
-                                        newRezervation.put("Day", selectDate1.getText().toString());
-                                        fb2.collection("Student Email").document(str).collection("Rezervations").document().set(newRezervation).
-                                                addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        Log.d(TAG, "DocumentSnapshot successfully written. ");
+
+                                        FirebaseFirestore fb2 = FirebaseFirestore.getInstance();
+                                        fb2.collection("Student Email").document(str).collection("Balance").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                if (task.isSuccessful()){
+                                                    for (QueryDocumentSnapshot documentSnapshot : task.getResult()){
+                                                        int currentAmount = Integer.valueOf(documentSnapshot.get("Balance History").toString());
+                                                        if(isBalanceEnough(currentAmount, foodAmount)){
+                                                            Map<String, String > newRezervation = new HashMap<>();
+                                                            newRezervation.put("Day", selectDate1.getText().toString());
+                                                            fb.collection("Student Email").document(str).collection("Rezervations").document().set(newRezervation).
+                                                                    addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @Override
+                                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                                            Log.d(TAG, "DocumentSnapshot successfully written. ");
+                                                                        }
+                                                                    }).addOnFailureListener(new OnFailureListener() {
+                                                                        @Override
+                                                                        public void onFailure(@NonNull Exception e) {
+                                                                            Log.w(TAG, "Error document wrting", e);
+                                                                        }
+                                                                    });
+                                                            int newBalance = (extractionBalance(currentAmount,foodAmount));
+                                                            Intent intent = new Intent(getApplicationContext(), BalanceHistory.class);
+                                                            intent.putExtra("message_new", Integer.valueOf(newBalance));
+                                                            intent.putExtra("message", str);
+                                                            startActivity(intent);
+                                                            Toast.makeText(MakeRezervation.this, "Rezervation is successfully made.", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(MakeRezervation.this, "Check your balance...", Toast.LENGTH_SHORT).show();
+
+                                                        }else{
+                                                            Toast.makeText(MakeRezervation.this, "Please load balance first!!", Toast.LENGTH_SHORT).show();
+                                                        }
                                                     }
-                                                }).addOnFailureListener(new OnFailureListener() {
-                                                    @Override
-                                                    public void onFailure(@NonNull Exception e) {
-                                                        Log.w(TAG, "Error document wrting", e);
-                                                    }
-                                                });
-                                        Toast.makeText(MakeRezervation.this, "Rezervation is successfully made.", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
+
                                     }
                                 }
                             }
@@ -185,8 +216,6 @@ public class MakeRezervation extends AppCompatActivity {
                                 boolean isExist = false;
                                 if(task.isSuccessful()){
                                     for (QueryDocumentSnapshot documentSnapshot : task.getResult()){
-                                        Log.d(TAG, "Make " + selectDate2.getText().toString());
-                                        Log.d(TAG, "Make " + documentSnapshot.get("Day"));
                                         if(documentSnapshot.get("Day")!=null){
                                             if(documentSnapshot.get("Day").equals(selectDate2.getText().toString())){
                                                 isExist = true;
@@ -197,21 +226,44 @@ public class MakeRezervation extends AppCompatActivity {
                                     if(isExist){
                                         Toast.makeText(MakeRezervation.this, "You have rezervation to that day already!", Toast.LENGTH_SHORT).show();
                                     }else{
-                                        Map<String, String> newRezervation = new HashMap<>();
-                                        newRezervation.put("Day", selectDate2.getText().toString());
-                                        fb.collection("Student Email").document(str).collection("Rezervations").document().set(newRezervation).
-                                                addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        Log.d(TAG, "DocumentSnapshot successfully written. ");
+                                        FirebaseFirestore fb2 = FirebaseFirestore.getInstance();
+                                        fb2.collection("Student Email").document(str).collection("Balance").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                if (task.isSuccessful()){
+                                                    for (QueryDocumentSnapshot documentSnapshot : task.getResult()){
+                                                        int currentAmount = Integer.valueOf(documentSnapshot.get("Balance History").toString());
+                                                        if(isBalanceEnough(currentAmount, foodAmount)){
+                                                            Map<String, String > newRezervation = new HashMap<>();
+                                                            newRezervation.put("Day", selectDate2.getText().toString());
+                                                            fb.collection("Student Email").document(str).collection("Rezervations").document().set(newRezervation).
+                                                                    addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @Override
+                                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                                            Log.d(TAG, "DocumentSnapshot successfully written. ");
+                                                                        }
+                                                                    }).addOnFailureListener(new OnFailureListener() {
+                                                                        @Override
+                                                                        public void onFailure(@NonNull Exception e) {
+                                                                            Log.w(TAG, "Error document wrting", e);
+                                                                        }
+                                                                    });
+                                                            int newBalance = (extractionBalance(currentAmount,foodAmount));
+                                                            Log.d(TAG, "new balance " + newBalance);
+                                                            Intent intent = new Intent(getApplicationContext(), BalanceHistory.class);
+                                                            intent.putExtra("message_new", Integer.valueOf(newBalance));
+                                                            intent.putExtra("message", str);
+                                                            startActivity(intent);
+                                                            Toast.makeText(MakeRezervation.this, "Rezervation is successfully made.", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(MakeRezervation.this, "Check your balance...", Toast.LENGTH_SHORT).show();
+
+                                                        }else{
+                                                            Toast.makeText(MakeRezervation.this, "Please load balance first!!", Toast.LENGTH_SHORT).show();
+                                                        }
                                                     }
-                                                }).addOnFailureListener(new OnFailureListener() {
-                                                    @Override
-                                                    public void onFailure(@NonNull Exception e) {
-                                                        Log.w(TAG, "Error document wrting", e);
-                                                    }
-                                                });
-                                        Toast.makeText(MakeRezervation.this, "Rezervation is successfully made.", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
                                     }
                                 }
                             }
@@ -257,21 +309,44 @@ public class MakeRezervation extends AppCompatActivity {
                                     if(isExist){
                                         Toast.makeText(MakeRezervation.this, "You have rezervation to that day already!", Toast.LENGTH_SHORT).show();
                                     }else{
-                                        Map<String, String> newRezervation = new HashMap<>();
-                                        newRezervation.put("Day", selectDate3.getText().toString());
-                                        fb.collection("Student Email").document(str).collection("Rezervations").document().set(newRezervation).
-                                                addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        Log.d(TAG, "DocumentSnapshot successfully written. ");
+                                        FirebaseFirestore fb2 = FirebaseFirestore.getInstance();
+                                        fb2.collection("Student Email").document(str).collection("Balance").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                if (task.isSuccessful()){
+                                                    for (QueryDocumentSnapshot documentSnapshot : task.getResult()){
+                                                        int currentAmount = Integer.valueOf(documentSnapshot.get("Balance History").toString());
+                                                        if(isBalanceEnough(currentAmount, foodAmount)){
+                                                            Map<String, String > newRezervation = new HashMap<>();
+                                                            newRezervation.put("Day", selectDate3.getText().toString());
+                                                            fb.collection("Student Email").document(str).collection("Rezervations").document().set(newRezervation).
+                                                                    addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @Override
+                                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                                            Log.d(TAG, "DocumentSnapshot successfully written. ");
+                                                                        }
+                                                                    }).addOnFailureListener(new OnFailureListener() {
+                                                                        @Override
+                                                                        public void onFailure(@NonNull Exception e) {
+                                                                            Log.w(TAG, "Error document wrting", e);
+                                                                        }
+                                                                    });
+                                                            int newBalance = (extractionBalance(currentAmount,foodAmount));
+                                                            Log.d(TAG, "new balance " + newBalance);
+                                                            Intent intent = new Intent(getApplicationContext(), BalanceHistory.class);
+                                                            intent.putExtra("message_new", Integer.valueOf(newBalance));
+                                                            intent.putExtra("message", str);
+                                                            startActivity(intent);
+                                                            Toast.makeText(MakeRezervation.this, "Rezervation is successfully made.", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(MakeRezervation.this, "Check your balance...", Toast.LENGTH_SHORT).show();
+
+                                                        }else{
+                                                            Toast.makeText(MakeRezervation.this, "Please load balance first!!", Toast.LENGTH_SHORT).show();
+                                                        }
                                                     }
-                                                }).addOnFailureListener(new OnFailureListener() {
-                                                    @Override
-                                                    public void onFailure(@NonNull Exception e) {
-                                                        Log.w(TAG, "Error document wrting", e);
-                                                    }
-                                                });
-                                        Toast.makeText(MakeRezervation.this, "Rezervation is successfully made.", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
                                     }
                                 }
                             }
@@ -319,21 +394,44 @@ public class MakeRezervation extends AppCompatActivity {
                                     if(isExist){
                                         Toast.makeText(MakeRezervation.this, "You have rezervation to that day already!", Toast.LENGTH_SHORT).show();
                                     }else{
-                                        Map<String, String> newRezervation = new HashMap<>();
-                                        newRezervation.put("Day", selectDate4.getText().toString());
-                                        fb.collection("Student Email").document(str).collection("Rezervations").document().set(newRezervation).
-                                                addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        Log.d(TAG, "DocumentSnapshot successfully written. ");
+                                        FirebaseFirestore fb2 = FirebaseFirestore.getInstance();
+                                        fb2.collection("Student Email").document(str).collection("Balance").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                if (task.isSuccessful()){
+                                                    for (QueryDocumentSnapshot documentSnapshot : task.getResult()){
+                                                        int currentAmount = Integer.valueOf(documentSnapshot.get("Balance History").toString());
+                                                        if(isBalanceEnough(currentAmount, foodAmount)){
+                                                            Map<String, String > newRezervation = new HashMap<>();
+                                                            newRezervation.put("Day", selectDate4.getText().toString());
+                                                            fb.collection("Student Email").document(str).collection("Rezervations").document().set(newRezervation).
+                                                                    addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @Override
+                                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                                            Log.d(TAG, "DocumentSnapshot successfully written. ");
+                                                                        }
+                                                                    }).addOnFailureListener(new OnFailureListener() {
+                                                                        @Override
+                                                                        public void onFailure(@NonNull Exception e) {
+                                                                            Log.w(TAG, "Error document wrting", e);
+                                                                        }
+                                                                    });
+                                                            int newBalance = (extractionBalance(currentAmount,foodAmount));
+                                                            Log.d(TAG, "new balance " + newBalance);
+                                                            Intent intent = new Intent(getApplicationContext(), BalanceHistory.class);
+                                                            intent.putExtra("message_new", Integer.valueOf(newBalance));
+                                                            intent.putExtra("message", str);
+                                                            startActivity(intent);
+                                                            Toast.makeText(MakeRezervation.this, "Rezervation is successfully made.", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(MakeRezervation.this, "Check your balance...", Toast.LENGTH_SHORT).show();
+
+                                                        }else{
+                                                            Toast.makeText(MakeRezervation.this, "Please load balance first!!", Toast.LENGTH_SHORT).show();
+                                                        }
                                                     }
-                                                }).addOnFailureListener(new OnFailureListener() {
-                                                    @Override
-                                                    public void onFailure(@NonNull Exception e) {
-                                                        Log.w(TAG, "Error document wrting", e);
-                                                    }
-                                                });
-                                        Toast.makeText(MakeRezervation.this, "Rezervation is successfully made.", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
                                     }
                                 }
                             }
@@ -379,21 +477,44 @@ public class MakeRezervation extends AppCompatActivity {
                                     if(isExist){
                                         Toast.makeText(MakeRezervation.this, "You have rezervation to that day already!", Toast.LENGTH_SHORT).show();
                                     }else{
-                                        Map<String, String> newRezervation = new HashMap<>();
-                                        newRezervation.put("Day", selectDate5.getText().toString());
-                                        fb.collection("Student Email").document(str).collection("Rezervations").document().set(newRezervation).
-                                                addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        Log.d(TAG, "DocumentSnapshot successfully written. ");
+                                        FirebaseFirestore fb2 = FirebaseFirestore.getInstance();
+                                        fb2.collection("Student Email").document(str).collection("Balance").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                if (task.isSuccessful()){
+                                                    for (QueryDocumentSnapshot documentSnapshot : task.getResult()){
+                                                        int currentAmount = Integer.valueOf(documentSnapshot.get("Balance History").toString());
+                                                        if(isBalanceEnough(currentAmount, foodAmount)){
+                                                            Map<String, String > newRezervation = new HashMap<>();
+                                                            newRezervation.put("Day", selectDate5.getText().toString());
+                                                            fb.collection("Student Email").document(str).collection("Rezervations").document().set(newRezervation).
+                                                                    addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @Override
+                                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                                            Log.d(TAG, "DocumentSnapshot successfully written. ");
+                                                                        }
+                                                                    }).addOnFailureListener(new OnFailureListener() {
+                                                                        @Override
+                                                                        public void onFailure(@NonNull Exception e) {
+                                                                            Log.w(TAG, "Error document wrting", e);
+                                                                        }
+                                                                    });
+                                                            int newBalance = (extractionBalance(currentAmount,foodAmount));
+                                                            Log.d(TAG, "new balance " + newBalance);
+                                                            Intent intent = new Intent(getApplicationContext(), BalanceHistory.class);
+                                                            intent.putExtra("message_new", Integer.valueOf(newBalance));
+                                                            intent.putExtra("message", str);
+                                                            startActivity(intent);
+                                                            Toast.makeText(MakeRezervation.this, "Rezervation is successfully made.", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(MakeRezervation.this, "Check your balance...", Toast.LENGTH_SHORT).show();
+
+                                                        }else{
+                                                            Toast.makeText(MakeRezervation.this, "Please load balance first!!", Toast.LENGTH_SHORT).show();
+                                                        }
                                                     }
-                                                }).addOnFailureListener(new OnFailureListener() {
-                                                    @Override
-                                                    public void onFailure(@NonNull Exception e) {
-                                                        Log.w(TAG, "Error document wrting", e);
-                                                    }
-                                                });
-                                        Toast.makeText(MakeRezervation.this, "Rezervation is successfully made.", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
                                     }
                                 }
                             }
@@ -437,5 +558,23 @@ public class MakeRezervation extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    public int addBalanceWhenCanceled(int pastAmount, int addedAmount) {
+        return 0;
+    }
+
+    @Override
+    public int  extractionBalance(int pastAmount, int extractAmount) {
+        return pastAmount - extractAmount;
+    }
+
+    @Override
+    public boolean isBalanceEnough(int currentAmount, int neededAmount) {
+        if(currentAmount>=neededAmount)
+            return true;
+        else
+            return false;
     }
 }

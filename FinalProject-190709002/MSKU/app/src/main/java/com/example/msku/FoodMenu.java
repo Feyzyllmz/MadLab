@@ -15,13 +15,21 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.Dictionary;
+import java.util.Enumeration;
+
 public class FoodMenu extends AppCompatActivity {
+//Code that in this activity is written by Feyza Yılmaz.
 
     ImageButton btnBack;
     ImageButton btnHome;
@@ -69,6 +77,22 @@ public class FoodMenu extends AppCompatActivity {
         time3 = findViewById(R.id.Time3);
         time4 = findViewById(R.id.Time4);
         time5 = findViewById(R.id.Time5);
+
+        //Update the current day and ogun every week:
+        /*FirebaseFirestore fbUpdate = FirebaseFirestore.getInstance();
+        fbUpdate.collection("Current Date").document("Monday").update("Day", "26.12.22");
+        fbUpdate.collection("Current Date").document("Tuesday").update("Day", "27.12.22");
+        fbUpdate.collection("Current Date").document("Wednesday").update("Day", "28.12.22");
+        fbUpdate.collection("Current Date").document("Thursday").update("Day", "29.12.22");
+        fbUpdate.collection("Current Date").document("Friday").update("Day", "30.12.22");*/
+
+        /*FirebaseFirestore fbUpdate = FirebaseFirestore.getInstance();
+        fbUpdate.collection("Current Date").document("Monday").update("Ogun", "Hamburger");
+        fbUpdate.collection("Current Date").document("Tuesday").update("Day", "Pizza");
+        fbUpdate.collection("Current Date").document("Wednesday").update("Day", "Spaghetti");
+        fbUpdate.collection("Current Date").document("Thursday").update("Day", "Rice");
+        fbUpdate.collection("Current Date").document("Friday").update("Day", "sushi");*/
+
 
 
         FirebaseFirestore fb = FirebaseFirestore.getInstance();

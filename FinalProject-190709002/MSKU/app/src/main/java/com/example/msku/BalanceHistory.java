@@ -22,6 +22,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import org.w3c.dom.Text;
 
 public class BalanceHistory extends AppCompatActivity {
+//Code that in this activity is written by Feyza Yılmaz.
 
     ImageButton btnBack;
     ImageButton btnHome;
@@ -38,25 +39,45 @@ public class BalanceHistory extends AppCompatActivity {
         btnPerson = findViewById(R.id.imgBtnPerson);
         txtAmount = findViewById(R.id.txtBalanceHistoryAmount);
 
+
+        Intent intentGetNew = getIntent();
+        int strNew = intentGetNew.getIntExtra("message_new", -1);
         Intent intentGet = getIntent();
         String str = intentGet.getStringExtra("message");
-
-        FirebaseFirestore fb=FirebaseFirestore.getInstance();
-        fb.collection("Student Email").document(str).collection("Balance").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if(task.isSuccessful()){
-                    for(QueryDocumentSnapshot documentSnapshot : task.getResult()){
-                        if(documentSnapshot.getId().equals(str)){
-                            txtAmount.setText(documentSnapshot.get("Balance History").toString());
-                            Intent intent = new Intent(getApplicationContext(), MakeRezervation.class);
-                            intent.putExtra("message_history", documentSnapshot.get("Balance History").toString());
-                            startActivity(intent);
+        if(strNew != -1){
+            FirebaseFirestore fb = FirebaseFirestore.getInstance();
+            fb.collection("Student Email").document(str).collection("Balance").document(str).update("Balance History", strNew);
+            fb.collection("Student Email"). document(str).collection("Balance").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if(task.isSuccessful()){
+                        for (QueryDocumentSnapshot documentSnapshot : task.getResult()){
+                            if (documentSnapshot.getId().equals(str)){
+                                txtAmount.setText(documentSnapshot.get("Balance History").toString());
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        }else{
+            FirebaseFirestore fb=FirebaseFirestore.getInstance();
+            fb.collection("Student Email").document(str).collection("Balance").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if(task.isSuccessful()){
+                        for (QueryDocumentSnapshot documentSnapshot : task.getResult()){
+                            if(documentSnapshot.getId().equals(str)){
+                                txtAmount.setText(documentSnapshot.get("Balance History").toString());
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+
+
 
 
         btnBack = findViewById(R.id.imgBtnBack);
